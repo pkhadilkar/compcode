@@ -8,19 +8,80 @@
 #include <fstream>
 #define TOTAL 100
 using namespace std;
-
-enum lamp_state {
-	ANY = 0, ON, OFF
-};
-
+#define OFF 0
+#define ON 1
+#define ANY 2
 // globals to avoid arg passing
 int N, C;
-// take advantage of 0 initialization to default state of all lamps to 
-// ANY = 0
-lamp_state  lamps[TOTAL];
+int  lamps[TOTAL] = {2};
+// max four switches 
+// max 2^4 permutatiosn
+int perms[16][4];
+
+void inline swap(int i, int j, vector<int> & seq) {
+	int t = seq[i];
+	seq[i] = seq[j];
+	seq[j] = t;
+}
+
+void gen_perm_rec(int start, int length, int * seq, int & index) {
+	if(start == length - 1) {
+		// found next permutation
+		for(int i = 0; i < length; ++i)
+			perms[index][i] = seq[i];
+		++index;
+		return;
+	}
+	
+	for(int i = start; i < length; ++i) {
+		// new start followed by all 
+		// permutations of remaining
+		swap(i, start, seq);
+		gen_perm_rec(start + 1, length, seq, index);
+		swap(i, start, seq);
+	}
+
+}
+
+int gen_perm(int * seq, int n) {
+	int index = 0;
+	gen_perm_rec(0, n, seq, index);
+	return index;
+}
+
+// input consists of sequence of n button presses
+void apply(int * aux, int * seq, int n) {
+	for(int i = 0; i < n; ++i) {
+		if(seq[i] == 0) {
+			for(int j = 0; j < N; ++j)
+				aux[j] = (aux[j] + 1) % 2;
+		}
+	}
+}
 
 void val_combs(vector<string> & configs) {
+	int seq[4];
+	for(int i = 0; i < 16; ++i) {
+		int j = i, count = 0;
+		
+		while(j) {
+			if(j & 1) seq[count] = count++;
+			j >>= 1;
+		}
+		// we can only have as many as C
+		// button presses
+		if(count > C) continue;
 
+		int n = gen_perm(seq, count);
+		for(int j = 0; j < n; ++j) {
+			// apply j'th sequence
+			int aux[TOTAL] = {ON};
+			apply(aux, perms[j], count);
+			if(matches(aux, lamps)) {
+				add_config(aux, configs);
+			}
+		}
+	}
 }
 
 
