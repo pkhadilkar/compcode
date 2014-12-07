@@ -1,24 +1,25 @@
 /*
- * ID: pushkar7
- * LANG: C++
- * PROG: lamps
+ID: pushkar7
+LANG: C++
+PROB: lamps
  */
 #include <iostream>
 #include <algorithm>
 #include <fstream>
-#define TOTAL 100
+#include <vector>
+#define TOTAL (100 + 1)
 using namespace std;
 #define OFF 0
 #define ON 1
 #define ANY 2
 // globals to avoid arg passing
 int N, C;
-int  lamps[TOTAL] = {2};
+int  lamps[TOTAL];
 // max four switches 
 // max 2^4 permutatiosn
 int perms[16][4];
 
-void inline swap(int i, int j, vector<int> & seq) {
+void inline swap(int i, int j, int * seq) {
 	int t = seq[i];
 	seq[i] = seq[j];
 	seq[j] = t;
@@ -52,34 +53,72 @@ int gen_perm(int * seq, int n) {
 // input consists of sequence of n button presses
 void apply(int * aux, int * seq, int n) {
 	for(int i = 0; i < n; ++i) {
+		// toggle all
 		if(seq[i] == 0) {
-			for(int j = 0; j < N; ++j)
+			for(int j = 1; j <= N; ++j)
 				aux[j] = (aux[j] + 1) % 2;
+		} // toggle odd
+		else if(seq[i] == 1) {
+			for(int j = 1; j <= N; j += 2) {
+				aux[j] = (aux[j] + 1) % 2;
+			}
+		} // toggle even
+		else if(seq[i] == 2) {
+			for(int j = 2; j <= N; j += 2) {
+				aux[j] = (aux[j] + 1) % 2;
+			}
+		} // toggle (3k + 1)
+		else {
+			for(int j = 1, k = 0; j <= N; ++k, j = 3 * k + 1) {
+				aux[j] = (aux[j] + 1) % 2;
+			}
 		}
 	}
+}
+
+bool matches(int * aux, int * lamps) {
+	for(int i = 1; i <= N; ++i) {
+		if(lamps[i] == ANY || lamps[i] == aux[i]) ;
+		else return false;
+	}
+	return true;
+}
+
+void add_config(int * aux, vector<string> & configs) {
+	string s = "";
+	for(int i = 1; i <= N; ++i) {
+		// for some reason this char
+		// is very important and gives
+		// non-platform specific behaviour
+		s += char('0' + aux[i]);
+	}
+	configs.push_back(s);
 }
 
 void val_combs(vector<string> & configs) {
 	int seq[4];
 	for(int i = 0; i < 16; ++i) {
-		int j = i, count = 0;
+		int j = i, count = 0, k = 0;
 		
 		while(j) {
-			if(j & 1) seq[count] = count++;
+			if(j & 1) seq[count++] = k;
 			j >>= 1;
+			++k;
 		}
 		// we can only have as many as C
 		// button presses
 		if(count > C) continue;
 
 		int n = gen_perm(seq, count);
-		for(int j = 0; j < n; ++j) {
+		for(int j = 0; j < n || C == 0; ++j) {
 			// apply j'th sequence
-			int aux[TOTAL] = {ON};
+			int aux[TOTAL];
+			fill(aux, aux + TOTAL, ON);
 			apply(aux, perms[j], count);
 			if(matches(aux, lamps)) {
 				add_config(aux, configs);
 			}
+			if(!C) break;
 		}
 	}
 }
@@ -92,6 +131,7 @@ int main() {
 	in >> N >> C;
 
 	int x = 0;
+	fill(lamps, lamps + TOTAL, ANY);
 	while((in >> x) && x != -1) {
 		lamps[x] = ON;
 	}
@@ -103,9 +143,16 @@ int main() {
 	vector<string> configs;
 	val_combs(configs);
 
-	sort(configs)
-	for(string s: configs) {
-		out << s << "\n";
+	sort(configs.begin(), configs.end());
+	string prev="";
+	for(int i = 0; i < configs.size(); ++i) {
+		if(prev.compare("") == 0 || !(prev.compare(configs[i]) == 0))
+			out << configs[i] << "\n";
+		prev = configs[i];
+	}
+
+	if(configs.size() == 0) {
+		out << "IMPOSSIBLE\n";
 	}
 
 	in.close();
