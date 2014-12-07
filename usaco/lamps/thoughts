@@ -1,0 +1,19 @@
+All buttons toggle the state of lamps.
+
+Thus, they have their effect preserved only if number of button presses is
+odd. We can simulate this by 1 button press or none.
+
+We have 4 buttons. Each of them can be pressed or not pressed. Giving us
+2^4  = 16 possible button press sequences. Order matters within each 
+sequence. Thus, we should try permutations for buttons in a given sequence.
+
+Now, there is one more restriction. If number of switch presses is less than
+4, then we have to abide by that and should consider sequences that have
+exactly that many button presses.
+
+Subproblems:
+1. 	find all subsets for {1, 2, 3, 4}. Use binary representation of numbers 1 
+	to 16
+2.	Find all permutations of a given set. Accept a vector / array and return
+	a vector containing all possible combinations.
+
