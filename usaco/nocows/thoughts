@@ -1,0 +1,30 @@
+N	-- number of cows
+K	-- height
+For a given (N, K) how many different pedigree structures
+Dynamic Programming
+
+
+Assume that N and K are "sufficiently large"
+
+S(N, K) = 2 * t					-- because we always have smaller number of nodes in the left subtree
+	where	for i = 0 ; i <= ceil(N / 2); ++i
+			t += S(i, K - 1) * S(N - i - 1, K - 1)
+What are base cases
+
+S(0, 0) = 1
+S(N, 0) = 0
+S(0, K) = 0
+S(1, 0) = 1
+S(1, K) = 0, k > 0
+
+compute bottom up
+N, K depends on same row preceding column and preceding row and a column.
+
+If N is odd, we can have a combination where left and right trees have same
+number of nodes. We want to count this combination only once. 
+
+Thus, we should do this in the for loop itself and do not multiply t afterwards
+
+Instead of S(N - i - 1, K - 1), we should try S(N - i - 1, k') where k' <= K - 1
+
+This is because it is sufficient for one child of tree to satisfy height constraint
