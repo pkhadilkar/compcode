@@ -1,0 +1,43 @@
+how to handle numbers that are not in any interval ?
+
+we can find out such numbers, but we cannot give definite yes or no answer.
+
+this is because we want to maintain the property that the sequence of
+predicate answers is
+no no no no yes yes yes yes yes yes
+
+we can get rid of completely out of bound numbers by setting low and high
+using numbers in interval only.
+
+for a number that is not in space but not in interval, we should return
+no, since we want to move past that number. the trouble is, if position
+of number is >= n then we want that number to return "yes".
+
+x == non-existent
+n == target
+no no no x n
+
+here we want to return no for x i.e. low = mid + 1
+this is a troublesome case. if we knew this is the case, then we could do something.
+but we cannot locally know whether x is to the left of n or right of n. we'll want an
+answer for x - 1. But theoretically x - 1 could also be non existent. we can solve it 
+this way. We'll let the binary search find smallest non-existent number as answer, but
+afterwards we'll check if x exists. If it does, then we need to find smallest number
+larger than x that is in interval.
+
+how do we do that ? go through all intervals, we are only interested in intervals
+such that x lies "between" the interval. we ignore interval where x is greater than
+largest number in the interval. we will not find an interval where x is equal to
+upper bound since then x is not x.
+
+now suppose, we are at interval (a, b) where a < x < b. now the number we want is 
+simply x + 1. also if we find interval where x < a,  then a is also a possible 
+candidate value (since x + 1 could also be non-existent). thus, we consider all
+such candidates and focus on smallest of them
+
+
+no no no n x
+
+here we want to return yes for x i.e. high = mid - 1, because we do not want to focus on x here.
+
+but we won't since n is smaller, we'll always find n.
