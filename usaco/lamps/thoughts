@@ -1,19 +1,29 @@
-All buttons toggle the state of lamps.
+1: Toggle all
+2: Toggle odd
+3: Toggle even
+4: Toggle i's where i = 3k + 1 for k >= 0
+If there are even number of flips of switches, they do not affect the state of
+the lamps.
 
-Thus, they have their effect preserved only if number of button presses is
-odd. We can simulate this by 1 button press or none.
+Total combinations, 2 ^ 4 (all subsets of single switch presses)
 
-We have 4 buttons. Each of them can be pressed or not pressed. Giving us
-2^4  = 16 possible button press sequences. Order matters within each 
-sequence. Thus, we should try permutations for buttons in a given sequence.
+Although only odd presses should be "counted", we should consider all permutations
+of these switch presses, since 23 will produce a different output that 32.
 
-Now, there is one more restriction. If number of switch presses is less than
-4, then we have to abide by that and should consider sequences that have
-exactly that many button presses.
 
-Subproblems:
-1. 	find all subsets for {1, 2, 3, 4}. Use binary representation of numbers 1 
-	to 16
-2.	Find all permutations of a given set. Accept a vector / array and return
-	a vector containing all possible combinations.
+Total sets = 2 ^ 16.
+Permutations for each set = |S| !
+Max per set permutations = 24
+
+Hence general idea
+for each subset:
+	for each possible permutation of elements:
+		Apply toggles
+		See if final state matches given states
+		Save the state
+Sort and print output
+
+12344
+1	2	3	4	
+ON	ON	ON	ON
 
