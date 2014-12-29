@@ -1,0 +1,58 @@
+how to represents directions at a square as part of the graph ?
+
+Since it matters direction in which cows enter a graph, we must always 
+remember a direction or keep it in the graph.
+
+to keep it in graph, we can create 4 nodes at each square
+for example
+(0, 0, N), (0, 0, E), (0, 0, W), (0, 0, S).
+
+now there are two ways to represent these vertices. There are 10 * 10  * 4 = 400
+vertices. we need not maintain adjacency matrix, since that will have 400 * 400 entries.
+
+Instead, we only have to remember positions for obstacles, based on obstacle and boundaries, we
+can decide if two nodes are connected or not. Alternatively 400 * 400 is not such a big number 
+and we can still pre-process and store it if required.
+
+We anyway need to store 2 arrays one for cows and one for Farmer John to note the time when they
+first visit a vertex.
+
+
+key mapping
+0	0	0
+0	1	4
+0	2	8
+
+the logic whether the cows and farmer John will meet at a given position needs improvement / refinement.
+
+one trick about cycle length is that it is not from the time 0, but (current time - time when cycle start
+was first visited)
+
+consider a position be (i, j). Cows reach here at t1 and Farmer John reaches here at t2. Now they will meet
+if t1 + cycle_cow * k = t2 + cycle_john * l, for some k and l.
+
+This means that cows will be at that position in their k'th iteration counting from t1 and John will be there
+in his l'th iteration starting from t2. 
+
+t1 - t2 =  cycle_john * l - cycle_cow * k
+
+here l and k are unknowns
+equation reduces to
+
+c = l * c_john - c_cow * k
+we want to know if there is a solution for this equation.
+
+This is a linear Diophantine equation. We do not require actual solution, we only need to know if there is a solution.
+
+This equation has a solution if c is a multiple of gcd(c_john, c_cow)
+
+In the given example, cycle_john = cycle_cow = 48
+
+for john (6, 2, 49)
+for cows (6, 2, 1)
+
+equation thus is
+1 - 49 = 48 * l - 48 * k
+48 *l - 48 * k = -48
+
+
