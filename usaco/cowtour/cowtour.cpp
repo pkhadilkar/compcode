@@ -18,7 +18,7 @@ PROB: cowtour
 #define SI set<int>::iterator
 using namespace std;
 int N;
-double D = -1;
+double D = MAX_DISTANCE * 2;
 bool adj[MAX_PASTURES][MAX_PASTURES];
 int loc[MAX_PASTURES][2];
 double dist[MAX_PASTURES][MAX_PASTURES];
@@ -30,6 +30,7 @@ double compute_distance(int i, int j) {
 	double y = 1.0 * pow(loc[i][1] - loc[j][1], 2);
 	return sqrt(x + y);
 }
+
 
 void pasture_of(int l) {
 	cout << "computing pasture of " << l << endl;
@@ -49,48 +50,42 @@ void pasture_of(int l) {
 			}
 		}
 	}
-	pastures[l]= s;
+
+    pastures[l]= s;
 }
 
-void modify_shortest(set<int> & s) {
-	double dist_copy[MAX_PASTURES][MAX_PASTURES];
-	memcpy(&dist_copy[0][0], &dist[0][0], sizeof(dist));
-	for(SI j = s.begin(); j != s.end(); ++j) {
-		for(SI i = s.begin(); i != s.end(); ++i) {
-			if(*i == *j)	continue;
-			for(SI k = s.begin(); k != s.end(); ++k) {
-				if(*i == *k || *j == *k)	continue;
-				// find shortes path from i to k through j
-				double x = dist_copy[*i][*j] + dist_copy[*j][*k];
-				if(dist_copy[*i][*k] > x) {
-					dist_copy[*i][*k] = x;
+void precompute() {
+    
+    // compute all pairs shortest paths
+	FOR(k, 0, N) {
+		FOR(i, 0, N) {
+			FOR(j, 0, N) {
+				double tmp = dist[i][k] + dist[k][j];
+				if(tmp < dist[i][j]) {
+					dist[i][j] = tmp;
 				}
 			}
 		}
 	}
-
-	double local_max = 0.0;
-
-	for(SI i = s.begin(); i != s.end(); ++i) {
-		for(SI j = s.begin(); j != s.end(); ++j) {
-			if(*i == *j)	continue;
-			if(dist_copy[*i][*j] > local_max)
-				local_max = dist_copy[*i][*j];
-		}
-	}
-
-	if(D == -1 || local_max < D)
-		D = local_max;
-}
-
-
-void precompute() {
+    
 	fill(leader, leader + N, -1);
 	FOR(i, 0, N) {
 		if(leader[i] == -1) {
 			pasture_of(i);
 		}
 	}
+}
+
+// p1 and p2 are now connected find new diameter
+void find_diameter(set<int> *f1, set<int> * f2, int p1, int p2, double edge_distance) {
+    double d = 0;
+    for(SI xt = f1->begin(); xt != f1->end(); xt++) {
+        for(SI yt = f2->begin(); yt != f2->end(); ++yt) {
+            double tmp = dist[*xt][p1] + dist[p2][*yt] + edge_distance;
+            if(d < tmp)    d = tmp;
+        }
+    }
+    if(D > d)    D = d;
 }
 
 int main() {
@@ -109,9 +104,9 @@ int main() {
 			adj[i][j] = (s[j] == '1');
 			if(adj[i][j] && i < j) {
 				dist[i][j] = dist[j][i] = compute_distance(i, j);
-			} else if(dist[i][j] == 0){
+			} /*else if(dist[i][j] == 0){
 				dist[i][j] = MAX_DISTANCE;
-			}
+			}*/
 		}
 	}
 
@@ -123,17 +118,10 @@ int main() {
 		FOR(j, i + 1, N) {
 			if(!adj[i][j] && leader[i] != leader[j]) {
 				cout << "i: " << i << " j: " << j << endl;
-				adj[i][j] = adj[j][i] = true;
-				dist[i][j] = dist[j][i] = compute_distance(i, j);
-				set<int> s;
+				
 				set<int> *s_i = pastures[leader[i]];
 				set<int> *s_j = pastures[leader[j]];
-				
-				s.insert(s_i->begin(), s_i->end());
-				s.insert(s_j->begin(), s_j->end());
-				modify_shortest(s);
-				adj[i][j] = adj[j][i] = false;
-				dist[i][j] = dist[j][i] = MAX_DISTANCE;
+	            find_diameter(s_i, s_j, i, j, compute_distance(i, j));
 			}
 		}
 	}
