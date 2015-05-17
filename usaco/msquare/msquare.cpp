@@ -7,10 +7,12 @@ PROB: msquare
 #include<fstream>
 #include<set>
 #include<queue>
+#include <map>
 #include<cassert>
 #define SIZE (8)
 #define STATE (40320)
-#define DEBUG 1
+#define DEBUG 0
+#define STARTSTATE (12345678)
 using namespace std;
 // 1 2 3 4 8 7 6 5
 int map_index[] = {0, 1, 2, 3, 7, 6, 5, 4};
@@ -26,8 +28,8 @@ typedef unsigned short ushort ;
 int conf[SIZE];
 int target;
 set<int> visited;
-ushort parent[STATE]; 
-char sq[STATE ];
+map<int, int> parent_of;
+map<int, char> sq;
 int depth;
 
 void print_state(int state[SIZE]) {
@@ -73,32 +75,33 @@ void int_to_state(int t) {
 }
 
 string bfs() {
-	for(int i = 0; i < SIZE; ++i)	conf[i] = map_index[i] + 1;	// init
+	int_to_state(STARTSTATE);
 	queue<int> q;
-	int state_num = 0;
 	int neighbour[SIZE];
 	string path = "";
 	
 	int c = state_to_int(conf);
+	assert(c == STARTSTATE);
 	q.push(c);	
 	visited.insert(c);
 	depth = 0;
-	parent[0] = -1;
+	parent_of[c] = -1;
 
 	while(!q.empty()) {
 		c = q.front(); q.pop();
 		int_to_state(c);
-		for(int i = 0, j = state_num; i < 3; ++i) {
+		for(int i = 0; i < 3; ++i) {
 			int next = transform(neighbour, i);
 			if(visited.find(next) == visited.end()) {
-				++state_num;
-				parent[state_num] = j;
-				sq[state_num] = char('A' + i);
+
+				parent_of[next] = c;
+				sq[next] = char('A' + i);
+
 				if(next == target) {
-					int t = state_num;
-					while(t != 0) {
+					int t = next;
+					while(t != STARTSTATE) {
 						path = path + sq[t];
-						t = parent[t];
+						t = parent_of[t];
 					}
 					return string(path.rbegin(), path.rend());
 				}
@@ -124,11 +127,19 @@ int main() {
 
 	for(int i = 0; i < 3; ++i) {
 		int neighbour[SIZE];
-		cout << "transformation number: " << i << "\n";
+		//cout << "transformation number: " << i << "\n";
 		transform(neighbour, i);
 	}
 
-	//bfs();
+	string s = bfs();
+	out << s.length() << "\n";
+	int i;
+	for(i = 0; i < (int) s.length(); ++i) {
+		if(i && (i % 60 == 0)) out << "\n";
+		out << s[i];
+	}
+	if(i == 0 || (i % 60 != 0))
+		out << "\n";
 
 	in.close();
 	out.close();
