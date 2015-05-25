@@ -48,11 +48,8 @@ int solve() {
 }
 
 int main() {
-	int t;
-	cin >> t;
-
-	for(int i = 0; i < t; ++i) {
-		cin >> N;
+	
+	while(cin >> N) {
 		for(int j = 0; j < N; ++j) cin >> mixtures[j];
 		cout << solve() << "\n";
 	}
